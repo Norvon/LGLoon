@@ -1,6 +1,7 @@
 #!name = LGLoon · YouTube & Spotify
 #!desc = YouTube 开关控制复写和脚本，Spotify 开关控制广告请求和歌手列表处理。两个脚本均由 Loon 自动下载。QUIC 规则及 HTTPS 解密域名随整个插件启停。
 #!loon_version = 3.5.1(983)
+#!date = @VERSION_DATE@
 #!homepage = https://github.com/Norvon/LGLoon
 
 [Argument]

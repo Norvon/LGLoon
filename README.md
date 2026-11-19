@@ -10,7 +10,7 @@
 
 1. 把 [LGLoon.lcf](LGLoon.lcf) 中所需的 URL 条目加入主配置的 `[Plugin]` 段。已有同名本地插件时，用 URL 替换文件名。已经通过 URL 安装的用户在插件列表中更新即可。
 2. Loon 会从本仓库的 `main/scripts/` 下载媒体插件引用的两份 JS。在 iPhone 上启用复写、脚本和 MitM，并信任自己的 MitM 证书。若单独安装过同功能的 YouTube 或 Spotify 插件，停用重复的插件。[Loon 脚本路径说明](https://nsloon.app/docs/Script/script_v2/#脚本路径)
-3. 在媒体插件中分别开关 YouTube 和 Spotify。
+3. 在媒体插件中分别开关 YouTube 和 Spotify。插件列表中显示的日期就是当前安装的版本，更新插件后核对它是否变成最新发布的日期。
 
 ### 在设备上验证
 
@@ -27,7 +27,7 @@ python3 build.py
 shasum -a 256 -c checksums.sha256
 ```
 
-[构建入口](build.py) 会重新生成 Protobuf 绑定、检查 TypeScript、打包两份 JS，再生成安装插件。产物写入 `scripts/` 和 `plugins/`，各文件的摘要写入 [checksums.sha256](checksums.sha256)。发布时将核对过的产物和校验清单一并更新到 `main`。媒体插件中的两个脚本 URL 随该分支更新。
+[构建入口](build.py) 会重新生成 Protobuf 绑定、检查 TypeScript、打包两份 JS，再生成安装插件。插件头部的 `#!date` 是版本日期（北京时间），插件或脚本内容变化时才会更新，重复构建不会改动它。产物写入 `scripts/` 和 `plugins/`，各文件的摘要写入 [checksums.sha256](checksums.sha256)。发布时将核对过的产物和校验清单一并更新到 `main`。媒体插件中的两个脚本 URL 随该分支更新。
 
 `master` 保留开发历史。`main` 始终只保留一个根提交，后续发布在 `main` 上用 `git commit --amend` 更新该提交，再用 `git rev-list --count main` 确认结果为 `1`。
 
