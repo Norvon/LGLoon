@@ -5,7 +5,7 @@ import { Next } from '../lib/protobuf/response/next_pb'
 import { Search } from '../lib/protobuf/response/search_pb'
 import { Shorts } from '../lib/protobuf/response/shorts_pb'
 import { Guide } from '../lib/protobuf/response/guide_pb'
-import { Player } from '../lib/protobuf/response/player_pb'
+import { Player, BackgroundPlayer } from '../lib/protobuf/response/player_pb'
 import { Watch } from '../lib/protobuf/response/watch_pb'
 import { Entity } from '../lib/protobuf/response/frameworkUpdate_pb'
 
@@ -90,8 +90,23 @@ export class PlayerMessage extends YouTubeMessage {
     }
     // 去除广告追踪
     delete this.message?.playbackTracking?.pageadViewthroughconversion
+    this.addPlayAbility()
     this.needProcess = true
     return this
+  }
+
+  // 客户端按播放器响应里的 active 决定能否画中画和后台播放，做法与上游 LG 分支一致
+  addPlayAbility (): void {
+    const miniPlayerRender = this.message?.playabilityStatus?.miniPlayer?.miniPlayerRender
+    if (typeof miniPlayerRender === 'object') {
+      miniPlayerRender.active = true
+    }
+    // 后台播放项直接覆盖为开启，不依赖响应里原有的值
+    if (typeof this.message.playabilityStatus === 'object') {
+      this.message.playabilityStatus.backgroundPlayer = new BackgroundPlayer({
+        backgroundPlayerRender: { active: true }
+      })
+    }
   }
 
 }

@@ -4,7 +4,7 @@
 
 源码和构建说明放在 `master`。安装插件请看 [main 分支的使用说明](https://github.com/Norvon/LGLoon/tree/main#readme)。
 
-- [YouTube 与 Spotify 合并插件](plugins/LGLoon.lpx)提供两个总开关。YouTube 开关控制复写和响应脚本，另有隐藏上传按钮、隐藏 Shorts 按钮、恢复底栏订阅和调试日志四个选项。Spotify 开关控制请求脚本，分别过滤 `pendragon` 请求和调整 iPhone 歌手列表请求。YouTube 的 QUIC 规则和两个应用的 MitM 域名随整个插件启停。
+- [YouTube 与 Spotify 合并插件](plugins/LGLoon.lpx)提供两个总开关。YouTube 开关控制复写和响应脚本（去广告，开启后台播放和画中画），另有隐藏上传按钮、隐藏 Shorts 按钮、恢复底栏订阅和调试日志四个选项。Spotify 开关控制请求脚本，分别过滤 `pendragon` 请求和调整 iPhone 歌手列表请求。YouTube 的 QUIC 规则和两个应用的 MitM 域名随整个插件启停。
 - [国内 DNS 插件](plugins/China-DNS.lpx)当前为 VPN 启动测试版。10 个常用国内域名及其子域名使用阿里加密 DNS，共 20 条映射，其他域名沿用主配置。更新原订阅即可测试。
 
 ## 接入现有配置
@@ -40,12 +40,12 @@ shasum -a 256 -c checksums.sha256
 | 要修改的内容 | 源码 |
 | --- | --- |
 | 合并插件的开关、规则、脚本绑定和 MitM 域名 | [插件模板](src/media/LGLoon.lpx.in) |
-| YouTube 广告过滤、底栏和调试 | [入口](src/youtube/index.ts)、[响应处理](src/youtube/src/response.ts)、[消息定义](src/youtube/protobuf) |
+| YouTube 广告过滤、后台播放与画中画、底栏和调试 | [入口](src/youtube/index.ts)、[响应处理](src/youtube/src/response.ts)、[消息定义](src/youtube/protobuf) |
 | Spotify 广告请求过滤和歌手列表处理 | [Spotify 脚本源码](src/spotify/index.js) |
 | 国内 DNS 分类 | [生成器](src/dns/scripts/update_dns.py)、[域名名单](src/dns/cn.list)、[例外名单](src/dns/foreign-dns-exceptions.txt)、[数据版本](src/dns/manifest.json) |
 
 ### 来源
 
-- YouTube 以 [Norvon/Maasea_sgmodule · 9647aa5](https://github.com/Norvon/Maasea_sgmodule/tree/9647aa5fe889a7b7ab0a1b28d79d55c1ced7a899/Script/Youtube) 为基础。LGLoon 的构建版只处理本地响应，保留播放器返回的播放权限与下载设置。缺失的 [frameworkUpdate.proto](src/youtube/protobuf/response/frameworkUpdate.proto) 按上游生成文件的字段描述补齐。[许可及依赖声明](licenses/YouTube.txt)
+- YouTube 以 [Norvon/Maasea_sgmodule · 9647aa5](https://github.com/Norvon/Maasea_sgmodule/tree/9647aa5fe889a7b7ab0a1b28d79d55c1ced7a899/Script/Youtube) 为基础。LGLoon 的构建版只处理本地响应，在播放器响应里开启后台播放和画中画，下载设置保持原样。缺失的 [frameworkUpdate.proto](src/youtube/protobuf/response/frameworkUpdate.proto) 按上游生成文件的字段描述补齐。[许可及依赖声明](licenses/YouTube.txt)
 - 国内 DNS 生成器和数据取自 [ccc592/loon-dns-rules · e00e50a](https://github.com/ccc592/loon-dns-rules/tree/e00e50ae534615a69e57580709910a9ce580fb2a)，域名数据源为 MetaCubeX/meta-rules-dat。[GPL-3.0](licenses/China-DNS.txt)
 - Spotify 的广告请求匹配和歌手列表处理来自 [001ProMax/Surge 的两条复写](https://github.com/001ProMax/Surge/blob/429b5aa25a43a09443be73d38569b24fe05fd6db/Loon/Spotify.plugin)。
