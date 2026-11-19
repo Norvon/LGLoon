@@ -1,4 +1,4 @@
-# 把两个插件放进 iCloud 云盘的 Loon/Plugins，脚本放进 Loon/Scripts，再将这两行加入现有配置。
+# 将所需插件的 URL 加入现有配置的 [Plugin] 段。
 [Plugin]
-LGLoon.lpx, enabled=true
-China-DNS.lpx, enabled=true
+https://raw.githubusercontent.com/Norvon/LGLoon/main/plugins/LGLoon.lpx, enabled=true
+https://raw.githubusercontent.com/Norvon/LGLoon/main/plugins/China-DNS.lpx, enabled=true

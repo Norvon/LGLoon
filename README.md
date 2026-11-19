@@ -4,22 +4,14 @@
 
 源码和构建说明放在 `master`。安装插件请看 [main 分支的使用说明](https://github.com/Norvon/LGLoon/tree/main#readme)。
 
-- [YouTube 与 Spotify 合并插件](plugins/LGLoon.lpx)提供两个总开关。YouTube 开关控制复写和本地脚本，另有隐藏上传按钮、隐藏 Shorts 按钮、恢复底栏订阅和调试日志四个选项。Spotify 开关控制本地请求脚本，分别过滤 `pendragon` 请求和调整 iPhone 歌手列表请求。YouTube 的 QUIC 规则和两个应用的 MitM 域名随整个插件启停。
+- [YouTube 与 Spotify 合并插件](plugins/LGLoon.lpx)提供两个总开关。YouTube 开关控制复写和响应脚本，另有隐藏上传按钮、隐藏 Shorts 按钮、恢复底栏订阅和调试日志四个选项。Spotify 开关控制请求脚本，分别过滤 `pendragon` 请求和调整 iPhone 歌手列表请求。YouTube 的 QUIC 规则和两个应用的 MitM 域名随整个插件启停。
 - [国内 DNS 插件](plugins/China-DNS.lpx)使用仓库内的域名名单。命中的域名用阿里加密 DNS 查询，其他域名沿用现有 DNS 配置。
 
 ## 接入现有配置
 
-1. 将下面四个文件复制到 iCloud 云盘，保留文件名。在 iPhone 的「文件」App 确认四个文件已同步。
-
-   | 仓库文件 | iCloud 云盘目标目录 |
-   | --- | --- |
-   | [LGLoon.lpx](plugins/LGLoon.lpx) | `Loon/Plugins/` |
-   | [China-DNS.lpx](plugins/China-DNS.lpx) | `Loon/Plugins/` |
-   | [LGLoon-YouTube.js](scripts/LGLoon-YouTube.js) | `Loon/Scripts/` |
-   | [LGLoon-Spotify.js](scripts/LGLoon-Spotify.js) | `Loon/Scripts/` |
-
-2. 把 [LGLoon.lcf](LGLoon.lcf) 中的两个文件名条目加入现有主配置的 `[Plugin]`。之前用过远程版时，用本地条目替换对应的远程条目。主配置里已有的 `ChinaDNS`、`China`、`CN REGION` 三条直连规则继续按原配置管理。
-3. 启用复写、脚本和 MitM，并确认 iPhone 已信任自己的 MitM 证书。若单独安装过 YouTube 或 Spotify 插件，停用重复的插件。在合并插件里分别切换 YouTube 和 Spotify，DNS 映射可在插件列表里独立启停。[Loon 本地插件和脚本说明](https://t.me/LoonNews/1402)
+1. 把 [LGLoon.lcf](LGLoon.lcf) 中所需的 URL 条目加入主配置的 `[Plugin]` 段。已有同名本地插件时，用 URL 替换文件名。已经通过 URL 安装的用户在插件列表中更新即可。
+2. Loon 会从本仓库的 `main/scripts/` 下载媒体插件引用的两份 JS。在 iPhone 上启用复写、脚本和 MitM，并信任自己的 MitM 证书。若单独安装过同功能的 YouTube 或 Spotify 插件，停用重复的插件。[Loon 脚本路径说明](https://nsloon.app/docs/Script/script_v2/#脚本路径)
+3. 在媒体插件中分别开关 YouTube 和 Spotify，在插件列表中独立启停 DNS。主配置已有的 `ChinaDNS`、`China`、`CN REGION` 三条直连规则继续按原配置管理。
 
 ### 在设备上验证
 
@@ -41,7 +33,9 @@ python3 build.py
 shasum -a 256 -c checksums.sha256
 ```
 
-[构建入口](build.py) 会重新生成 Protobuf 绑定、检查 TypeScript、打包本地脚本，再生成两个安装插件。产物写入 `scripts/` 和 `plugins/`，各文件的摘要写入 [checksums.sha256](checksums.sha256)。修改源码后重新构建，核对差异，再将需要升级的文件复制到 iCloud。
+[构建入口](build.py) 会重新生成 Protobuf 绑定、检查 TypeScript、打包两份 JS，再生成两个安装插件。产物写入 `scripts/` 和 `plugins/`，各文件的摘要写入 [checksums.sha256](checksums.sha256)。发布时将核对过的产物和校验清单一并更新到 `main`。媒体插件中的两个脚本 URL 随该分支更新。
+
+`master` 保留开发历史。`main` 始终只保留一个根提交，后续发布在 `main` 上用 `git commit --amend` 更新该提交，再用 `git rev-list --count main` 确认结果为 `1`。
 
 | 要修改的内容 | 源码 |
 | --- | --- |

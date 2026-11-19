@@ -9,6 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 YOUTUBE = ROOT / "src/youtube"
 DNS = ROOT / "src/dns"
+RELEASE_URL = "https://raw.githubusercontent.com/Norvon/LGLoon/main"
 
 
 def main():
@@ -19,8 +20,8 @@ def main():
     youtube_script = Path("scripts/LGLoon-YouTube.js")
     spotify_script = Path("scripts/LGLoon-Spotify.js")
     template = (ROOT / "src/media/LGLoon.lpx.in").read_text(encoding="utf-8")
-    plugin = template.replace("@YOUTUBE_SCRIPT@", youtube_script.name)
-    plugin = plugin.replace("@SPOTIFY_SCRIPT@", spotify_script.name)
+    plugin = template.replace("@YOUTUBE_SCRIPT@", f"{RELEASE_URL}/{youtube_script.as_posix()}")
+    plugin = plugin.replace("@SPOTIFY_SCRIPT@", f"{RELEASE_URL}/{spotify_script.as_posix()}")
     spotify_bundle = subprocess.check_output(
         [YOUTUBE / "node_modules/.bin/esbuild", "src/spotify/index.js", "--bundle", "--minify", "--format=iife"],
         cwd=ROOT,
