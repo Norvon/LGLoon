@@ -1,6 +1,5 @@
 /src/youtube/node_modules/
 /src/youtube/dist/
-/src/dns/dist/
 .DS_Store
 __pycache__/
 *.pyc

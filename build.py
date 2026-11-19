@@ -1,21 +1,18 @@
 """从仓库源码生成 Loon 安装文件。首次构建先运行 npm ci --prefix src/youtube。"""
 import hashlib
 import subprocess
-import sys
 import tempfile
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
 YOUTUBE = ROOT / "src/youtube"
-DNS = ROOT / "src/dns"
 RELEASE_URL = "https://raw.githubusercontent.com/Norvon/LGLoon/main"
 
 
 def main():
     for task in ("build:proto", "typecheck", "build"):
         subprocess.run(["npm", "run", task], cwd=YOUTUBE, check=True)
-    subprocess.run([sys.executable, DNS / "scripts/update_dns.py"], check=True)
 
     youtube_script = Path("scripts/LGLoon-YouTube.js")
     spotify_script = Path("scripts/LGLoon-Spotify.js")
@@ -28,7 +25,6 @@ def main():
     )
     outputs = {
         Path("plugins/LGLoon.lpx"): plugin.encode("utf-8"),
-        Path("plugins/China-DNS.lpx"): (DNS / "dist/China-DNS.lpx").read_bytes(),
         youtube_script: (YOUTUBE / "dist/youtube.response.preview.js").read_bytes(),
         spotify_script: spotify_bundle,
     }
