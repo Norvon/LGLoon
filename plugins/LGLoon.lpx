@@ -1,0 +1,27 @@
+#!name = LGLoon · YouTube & Spotify
+#!desc = YouTube 开关控制复写和脚本，Spotify 开关控制处理广告请求和歌手列表的本地脚本。QUIC 规则及 HTTPS 解密域名随整个插件启停。
+#!loon_version = 3.5.1(983)
+#!homepage = https://github.com/Norvon/LGLoon
+
+[Argument]
+youtubeEnabled = switch,true,tag=启用 YouTube
+blockUpload = switch,false,tag=YouTube · 隐藏上传按钮
+blockShorts = switch,false,tag=YouTube · 隐藏 Shorts 按钮
+restoreSubscriptions = switch,false,tag=YouTube · 恢复底栏订阅
+debug = switch,false,tag=YouTube · 调试日志
+spotifyEnabled = switch,true,tag=启用 Spotify
+
+[Rule]
+# 让 YouTube 从 QUIC 回落到可处理的 HTTPS 连接。
+AND,((DOMAIN-SUFFIX,googlevideo.com),(PROTOCOL,QUIC)),REJECT
+AND,((DOMAIN-SUFFIX,youtubei.googleapis.com),(PROTOCOL,QUIC)),REJECT
+
+[Rewrite]
+request if ${youtubeEnabled} == true && ${url} ~= /^https?:\/\/[\w-]+\.googlevideo\.com\/initplayback.+&oad/ then reject(200)
+
+[Script]
+request if ${url} ~= /^https:\/\/(?:\w+-spclient|spclient\.wg)\.spotify\.com(?::443)?\/(?:pendragon\/|artistview\/v1\/artist\/[^?#]+\?(?:[^#]*&)?platform=iphone(?=[&#]|$))/ then script("LGLoon-Spotify.js") with enable=${spotifyEnabled}, tag="LGLoon Spotify"
+response if ${url} ~= /^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/(browse|next|player|search|reel\/reel_watch_sequence|guide|get_watch)/ then script("LGLoon-YouTube.js", {${blockUpload}, ${blockShorts}, ${restoreSubscriptions}, ${debug}}) with enable=${youtubeEnabled}, requires_body=true, binary_body_mode=true, tag="LGLoon YouTube"
+
+[MitM]
+hostname = *.googlevideo.com, youtubei.googleapis.com, *-spclient.spotify.com, spclient.wg.spotify.com
