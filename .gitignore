@@ -1,0 +1,12 @@
+# 发布分支只收录安装文件、校验清单和使用说明。
+/*
+!/.gitignore
+!/README.md
+!/checksums.sha256
+!/plugins/
+!/scripts/
+
+/plugins/*
+!/plugins/*.lpx
+/scripts/*
+!/scripts/*.js
