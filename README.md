@@ -5,7 +5,7 @@
 源码和构建说明放在 `master`。安装插件请看 [main 分支的使用说明](https://github.com/Norvon/LGLoon/tree/main#readme)。
 
 - [YouTube 与 Spotify 合并插件](plugins/LGLoon.lpx)提供两个总开关。YouTube 开关控制复写和响应脚本，另有隐藏上传按钮、隐藏 Shorts 按钮、恢复底栏订阅和调试日志四个选项。Spotify 开关控制请求脚本，分别过滤 `pendragon` 请求和调整 iPhone 歌手列表请求。YouTube 的 QUIC 规则和两个应用的 MitM 域名随整个插件启停。
-- [国内 DNS 插件](plugins/China-DNS.lpx)使用仓库内的域名名单。命中的域名用阿里加密 DNS 查询，其他域名沿用现有 DNS 配置。
+- [国内 DNS 插件](plugins/China-DNS.lpx)当前为 VPN 启动测试版。10 个常用国内域名及其子域名使用阿里加密 DNS，共 20 条映射，其他域名沿用主配置。更新原订阅即可测试。
 
 ## 接入现有配置
 
