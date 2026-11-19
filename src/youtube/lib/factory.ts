@@ -4,6 +4,7 @@ import {
   PlayerMessage,
   SearchMessage,
   ShortsMessage,
+  SettingMessage,
   GuideMessage,
   WatchMessage
 } from '../src/response'
@@ -16,6 +17,7 @@ const messages = new Map<string, new () => YouTubeMessage>([
   ['search', SearchMessage],
   ['reel_watch_sequence', ShortsMessage],
   ['guide', GuideMessage],
+  ['get_setting', SettingMessage],
   ['get_watch', WatchMessage]
 ])
 

@@ -4,7 +4,7 @@
 
 源码和构建说明放在 `master`。安装插件请看 [main 分支的使用说明](https://github.com/Norvon/LGLoon/tree/main#readme)。
 
-- [YouTube 与 Spotify 合并插件](plugins/LGLoon.lpx)提供两个总开关。YouTube 开关控制复写和响应脚本（去广告，开启后台播放和画中画），另有隐藏上传按钮、隐藏 Shorts 按钮、恢复底栏订阅和调试日志四个选项。Spotify 开关控制请求脚本，分别过滤 `pendragon` 请求和调整 iPhone 歌手列表请求。YouTube 的 QUIC 规则和两个应用的 MitM 域名随整个插件启停。
+- [YouTube 与 Spotify 合并插件](plugins/LGLoon.lpx)提供两个总开关。YouTube 开关控制复写和响应脚本（去广告，开启后台播放和画中画，在设置页补充画中画和后台播放项），另有隐藏上传按钮、隐藏 Shorts 按钮、恢复底栏订阅和调试日志四个选项。Spotify 开关控制请求脚本，分别过滤 `pendragon` 请求和调整 iPhone 歌手列表请求。YouTube 的 QUIC 规则和两个应用的 MitM 域名随整个插件启停。
 
 ## 接入现有配置
 
@@ -34,10 +34,10 @@ shasum -a 256 -c checksums.sha256
 | 要修改的内容 | 源码 |
 | --- | --- |
 | 合并插件的开关、规则、脚本绑定和 MitM 域名 | [插件模板](src/media/LGLoon.lpx.in) |
-| YouTube 广告过滤、后台播放与画中画、底栏和调试 | [入口](src/youtube/index.ts)、[响应处理](src/youtube/src/response.ts)、[消息定义](src/youtube/protobuf) |
+| YouTube 广告过滤、后台播放与画中画、设置项、底栏和调试 | [入口](src/youtube/index.ts)、[响应处理](src/youtube/src/response.ts)、[消息定义](src/youtube/protobuf) |
 | Spotify 广告请求过滤和歌手列表处理 | [Spotify 脚本源码](src/spotify/index.js) |
 
 ### 来源
 
-- YouTube 以 [Norvon/Maasea_sgmodule · 9647aa5](https://github.com/Norvon/Maasea_sgmodule/tree/9647aa5fe889a7b7ab0a1b28d79d55c1ced7a899/Script/Youtube) 为基础。LGLoon 的构建版只处理本地响应，在播放器响应里开启后台播放和画中画，下载设置保持原样。缺失的 [frameworkUpdate.proto](src/youtube/protobuf/response/frameworkUpdate.proto) 按上游生成文件的字段描述补齐。[许可及依赖声明](licenses/YouTube.txt)
+- YouTube 以 [Norvon/Maasea_sgmodule · 9647aa5](https://github.com/Norvon/Maasea_sgmodule/tree/9647aa5fe889a7b7ab0a1b28d79d55c1ced7a899/Script/Youtube) 为基础，功能与 [feature/lg · 35771ae](https://github.com/Norvon/Maasea_sgmodule/tree/35771ae98f75b5a888914c6703782a2e10b50d43/Script/Youtube) 的构建版脚本对齐：开启后台播放和画中画，在设置页补充画中画开关和后台播放项（含下载相关标志）。该分支源码里尚未打包的歌词与字幕翻译没有引入。缺失的 [frameworkUpdate.proto](src/youtube/protobuf/response/frameworkUpdate.proto) 按上游生成文件的字段描述补齐。[许可及依赖声明](licenses/YouTube.txt)
 - Spotify 的广告请求匹配和歌手列表处理来自 [001ProMax/Surge 的两条复写](https://github.com/001ProMax/Surge/blob/429b5aa25a43a09443be73d38569b24fe05fd6db/Loon/Spotify.plugin)。

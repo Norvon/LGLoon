@@ -6,6 +6,7 @@ import { Search } from '../lib/protobuf/response/search_pb'
 import { Shorts } from '../lib/protobuf/response/shorts_pb'
 import { Guide } from '../lib/protobuf/response/guide_pb'
 import { Player, BackgroundPlayer } from '../lib/protobuf/response/player_pb'
+import { Setting, SubSetting, SettingItem } from '../lib/protobuf/response/setting_pb'
 import { Watch } from '../lib/protobuf/response/watch_pb'
 import { Entity } from '../lib/protobuf/response/frameworkUpdate_pb'
 
@@ -188,6 +189,55 @@ export class WatchMessage extends YouTubeMessage {
       }
       this.needProcess = true
     }
+    return this
+  }
+}
+
+export class SettingMessage extends YouTubeMessage {
+  constructor (msgType: any = Setting, name: string = 'Setting') {
+    super(msgType, name)
+  }
+
+  pure (): YouTubeMessage {
+    // 增加 PIP
+    this.iterate(this.message.settingItems, 'categoryId', (obj) => {
+      if (obj.categoryId === 10135) {
+        const PipSettingRender = new SubSetting({
+          settingBooleanRenderer: {
+            itemId: 0,
+            enableServiceEndpoint: {
+              setClientSettingEndpoint: {
+                settingData: {
+                  clientSettingEnum: { item: 151 },
+                  boolValue: true
+                }
+              }
+            },
+            disableServiceEndpoint: {
+              setClientSettingEndpoint: {
+                settingData: {
+                  clientSettingEnum: { item: 151 },
+                  boolValue: false
+                }
+              }
+            }
+          }
+        })
+        obj.subSettings.push(PipSettingRender)
+      }
+    })
+    // 增加后台播放
+    const fakePlayBackgroundSetting = new SettingItem({
+      backgroundPlayBackSettingRenderer: {
+        backgroundPlayback: true,
+        download: true,
+        downloadQualitySelection: true,
+        smartDownload: true,
+        icon: { iconType: 1093 }
+      }
+    })
+    this.message.settingItems.push(fakePlayBackgroundSetting)
+    this.needProcess = true
     return this
   }
 }
