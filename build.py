@@ -1,5 +1,6 @@
 """从仓库源码生成 Loon 安装文件。首次构建先运行 npm ci --prefix src/youtube。"""
 import hashlib
+import os
 import re
 import subprocess
 import tempfile
@@ -46,8 +47,10 @@ def main():
 
     template = (ROOT / "src/media/LGLoon.lpx.in").read_text(encoding="utf-8")
     spotify_bundle = subprocess.check_output(
-        [YOUTUBE / "node_modules/.bin/esbuild", "src/spotify/index.js", "--bundle", "--minify", "--format=iife"],
+        [YOUTUBE / "node_modules/.bin/esbuild", "src/spotify/index.js", "--bundle", "--minify", "--format=iife",
+         "--inject:src/youtube/lib/text-polyfill.mjs"],
         cwd=ROOT,
+        env={**os.environ, "NODE_PATH": str(YOUTUBE / "node_modules")},
     )
     scripts = {
         YOUTUBE_SCRIPT: (YOUTUBE / "dist/youtube.response.preview.js").read_bytes(),
