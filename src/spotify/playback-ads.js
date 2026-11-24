@@ -1,8 +1,9 @@
 import { proto2, ScalarType } from '@bufbuild/protobuf'
 
-// 只声明广告字段和外层结构，Protobuf 会保留其余字段。proto2 会把 false 显式写回。
+// 只声明需要处理的字段，让 Protobuf 保留其余数据并显式写回 false 和空字符串。
 const AccountAttribute = proto2.makeMessageType('spotify.AccountAttribute', [
   { no: 2, name: 'bool_value', kind: 'scalar', T: ScalarType.BOOL, opt: true },
+  { no: 4, name: 'string_value', kind: 'scalar', T: ScalarType.STRING, opt: true },
 ])
 
 const AccountAttributeEntry = proto2.makeMessageType('spotify.AccountAttributeEntry', [
@@ -14,7 +15,35 @@ const AccountAttributes = proto2.makeMessageType('spotify.AccountAttributes', [
   { no: 1, name: 'entries', kind: 'message', T: AccountAttributeEntry, repeated: true },
 ])
 
+const PropertyId = proto2.makeMessageType('spotify.PropertyId', [
+  { no: 1, name: 'scope', kind: 'scalar', T: ScalarType.STRING, opt: true },
+  { no: 2, name: 'name', kind: 'scalar', T: ScalarType.STRING, opt: true },
+])
+
+const BoolValue = proto2.makeMessageType('spotify.BoolValue', [
+  { no: 1, name: 'value', kind: 'scalar', T: ScalarType.BOOL, opt: true },
+])
+
+const EnumValue = proto2.makeMessageType('spotify.EnumValue', [
+  { no: 1, name: 'value', kind: 'scalar', T: ScalarType.STRING, opt: true },
+])
+
+const AssignedValue = proto2.makeMessageType('spotify.AssignedValue', [
+  { no: 1, name: 'property_id', kind: 'message', T: PropertyId, opt: true },
+  { no: 3, name: 'bool_value', kind: 'message', T: BoolValue, opt: true },
+  { no: 5, name: 'enum_value', kind: 'message', T: EnumValue, opt: true },
+])
+
+const Configuration = proto2.makeMessageType('spotify.Configuration', [
+  { no: 3, name: 'assigned_values', kind: 'message', T: AssignedValue, repeated: true },
+])
+
+const ResolveSuccess = proto2.makeMessageType('spotify.ResolveSuccess', [
+  { no: 1, name: 'configuration', kind: 'message', T: Configuration, opt: true },
+])
+
 const CustomizationSuccess = proto2.makeMessageType('spotify.CustomizationSuccess', [
+  { no: 1, name: 'resolve_success', kind: 'message', T: ResolveSuccess, opt: true },
   { no: 3, name: 'account_attributes', kind: 'message', T: AccountAttributes },
 ])
 
@@ -34,28 +63,55 @@ const BootstrapResponse = proto2.makeMessageType('spotify.BootstrapResponse', [
   { no: 2, name: 'user_customization', kind: 'message', T: BootstrapCustomization },
 ])
 
-export function disablePlaybackAds(url, { status, body }) {
+const accountOverrides = {
+  ads: { boolValue: false },
+  'com.spotify.madprops.use.ucs.product.state': { boolValue: true },
+  'nft-disabled': { stringValue: '1' },
+  offline: { boolValue: true },
+  'player-license': { stringValue: 'premium' },
+  'streaming-rules': { stringValue: '' },
+  type: { stringValue: 'premium' },
+  'publish-playlist': { boolValue: false },
+  name: { stringValue: 'Spotify Premium' },
+  'financial-product': { stringValue: 'pr:premium,tc:0' },
+}
+
+export function rewriteSpotifyConfiguration(url, { status, body }, { tab = false, useractivity = true }) {
   if (status !== 200 || !(body instanceof Uint8Array)) return {}
 
-  const path = url.split(/[?#]/, 1)[0]
-  const isBootstrap = path.endsWith('/bootstrap/v1/bootstrap')
-  if (!isBootstrap && !path.endsWith('/user-customization-service/v1/customize')) return {}
+  const service = /^https:\/\/[^/]+\/(bootstrap|user-customization-service)/i.exec(url)?.[1]
+  if (!service) return {}
+  const isBootstrap = service.toLowerCase() === 'bootstrap'
 
   try {
     const message = (isBootstrap ? BootstrapResponse : CustomizationResponse).fromBinary(body)
     const customization = isBootstrap ? message.userCustomization?.success?.customization : message
-    const entries = customization?.success?.accountAttributes?.entries
+    const success = customization?.success
+    const entries = success?.accountAttributes?.entries
     if (!entries) return {}
 
     // map 中同名 key 以最后一条为准。
-    const ads = entries.filter(entry => entry.key === 'ads').pop()
-    if (ads?.value?.boolValue === false) return {}
+    const byKey = new Map(entries.map(entry => [entry.key, entry]))
+    for (const [key, fields] of Object.entries(accountOverrides)) {
+      const value = new AccountAttribute(fields)
+      const entry = byKey.get(key)
+      if (entry) {
+        entry.value = value
+      } else {
+        entries.push(new AccountAttributeEntry({ key, value }))
+      }
+    }
 
-    const value = new AccountAttribute({ boolValue: false })
-    if (ads) {
-      ads.value = value
-    } else {
-      entries.push(new AccountAttributeEntry({ key: 'ads', value }))
+    const assignedValues = success.resolveSuccess?.configuration?.assignedValues ?? []
+    for (const { propertyId, boolValue, enumValue } of assignedValues) {
+      const { scope, name } = propertyId ?? {}
+      if (scope === 'ios-system-your-plan-sidedrawer' && name === 'is_row_enabled' && boolValue) {
+        boolValue.value = false
+      } else if (tab && scope === 'ios-feature-navigation' && name === 'tab_configuration' && enumValue) {
+        enumValue.value = ''
+      } else if (!useractivity && scope === 'ios-feature-share' && name === 'is_useractivity_sharing_enabled' && boolValue) {
+        boolValue.value = false
+      }
     }
     return { body: message.toBinary() }
   } catch {
